@@ -53,6 +53,7 @@
 
 #include "Configs/HWP MRF24W XC32.h"
 
+#define USE_WIFI_DEMO_COMM
 // Comments: Other projects have -DCFG_INCLUDE_EX16_MRF24WG in their build options. For 
 //                  WiFi G Demo board projects, -DMRF24WG is in the build options. Therefore no need to
 //                  redefine < #define MRF24WG > here.

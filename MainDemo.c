@@ -395,7 +395,15 @@ static void InitializeBoard(void)
 
     // Push Button
     SW0_TRIS = 1;
-    
+//  Added UTN 2013-06-09
+#if defined(EEPROM_CS_TRIS)
+    EEPROM_CS_IO = 1;
+    EEPROM_CS_TRIS = 0;
+#endif
+
+#if defined(EEPROM_CS_TRIS)
+    XEEInit();
+#endif   
 }
 
 static ROM BYTE SerializedMACAddress[6] = {MY_DEFAULT_MAC_BYTE1, MY_DEFAULT_MAC_BYTE2, MY_DEFAULT_MAC_BYTE3, MY_DEFAULT_MAC_BYTE4, MY_DEFAULT_MAC_BYTE5, MY_DEFAULT_MAC_BYTE6};
@@ -692,9 +700,39 @@ void DisplayIPValue(IP_ADDR IPVal)
   Remarks:
     None
   ***************************************************************************/
-void SaveAppConfig(const APP_CONFIG *ptrAppConfig)
-{
+//void SaveAppConfig(const APP_CONFIG *ptrAppConfig)
+//{
+//    NVM_VALIDATION_STRUCT NVMValidationStruct;
+//
+//    // Get proper values for the validation structure indicating that we can use
+//    // these EEPROM/Flash contents on future boot ups
+//    NVMValidationStruct.wOriginalChecksum = wOriginalAppConfigChecksum;
+//    NVMValidationStruct.wCurrentChecksum = CalcIPChecksum((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
+//    NVMValidationStruct.wConfigurationLength = sizeof(APP_CONFIG);
+//
+//#if 0
+//    // Write the validation struct and current AppConfig contents to EEPROM/Flash
+//    XEEBeginWrite(0x0000);
+//    XEEWriteArray((BYTE*)&NVMValidationStruct, sizeof(NVMValidationStruct));
+//    XEEWriteArray((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
+//#endif
+//}
+
+//  Added UTN 2013-06-09
+
+#if defined(EEPROM_CS_TRIS) || defined(SPIFLASH_CS_TRIS)
+void SaveAppConfig(const APP_CONFIG *ptrAppConfig){
+
     NVM_VALIDATION_STRUCT NVMValidationStruct;
+
+    // Ensure adequate space has been reserved in non-volatile storage to
+    // store the entire AppConfig structure.  If you get stuck in this while(1)
+    // trap, it means you have a design time misconfiguration in TCPIPConfig.h.
+    // You must increase MPFS_RESERVE_BLOCK to allocate more space.
+    #if defined(STACK_USE_MPFS2)
+    if(sizeof(NVMValidationStruct) + sizeof(AppConfig) > MPFS_RESERVE_BLOCK)
+            while(1);
+    #endif
 
     // Get proper values for the validation structure indicating that we can use
     // these EEPROM/Flash contents on future boot ups
@@ -702,13 +740,19 @@ void SaveAppConfig(const APP_CONFIG *ptrAppConfig)
     NVMValidationStruct.wCurrentChecksum = CalcIPChecksum((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
     NVMValidationStruct.wConfigurationLength = sizeof(APP_CONFIG);
 
-#if 0
     // Write the validation struct and current AppConfig contents to EEPROM/Flash
-    XEEBeginWrite(0x0000);
-    XEEWriteArray((BYTE*)&NVMValidationStruct, sizeof(NVMValidationStruct));
-    XEEWriteArray((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
-#endif
+    #if defined(EEPROM_CS_TRIS)
+        XEEBeginWrite(0x0000);
+        XEEWriteArray((BYTE*)&NVMValidationStruct, sizeof(NVMValidationStruct));
+            XEEWriteArray((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
+    #else
+            SPIFlashBeginWrite(0x0000);
+            SPIFlashWriteArray((BYTE*)&NVMValidationStruct, sizeof(NVMValidationStruct));
+            SPIFlashWriteArray((BYTE*)ptrAppConfig, sizeof(APP_CONFIG));
+    #endif
+            Nop();
 }
+#endif
 
 #if defined (EZ_CONFIG_STORE)
 /****************************************************************************

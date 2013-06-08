@@ -105,22 +105,30 @@
 
 #define VBAT_TRIS           (TRISBbits.TRISB0)     // Battery level ADC input
 
-// Added to support EZ_CONFIG_STORE  
+// Added to support EZ_CONFIG_STORE
 // 25LC256 I/O pins
-//#define EEPROM_CS_TRIS		(TRISDbits.TRISD12)
-#define EEPROM_CS_IO		(LATDbits.LATD12)
-#define EEPROM_SCK_TRIS		(TRISGbits.TRISG6)
-#define EEPROM_SDI_TRIS		(TRISGbits.TRISG7)
-#define EEPROM_SDO_TRIS		(TRISGbits.TRISG8)
-#define EEPROM_SPI_IF		(IFS1bits.SPI2RXIF)
-#define EEPROM_SSPBUF		(SPI2BUF)
-#define EEPROM_SPICON1		(SPI2CON)
-#define EEPROM_SPICON1bits	(SPI2CONbits)
-#define EEPROM_SPIBRG		(SPI2BRG)
-#define EEPROM_SPISTAT		(SPI2STAT)
-#define EEPROM_SPISTATbits	(SPI2STATbits)
+// 2013.05.01 UTN Uncomment #define EEPROM_CS_TRIS
+#ifdef USE_WIFI_DEMO_COMM
+    #define EEPROM_CS_TRIS		(TRISBbits.TRISB1)
+    #define EEPROM_CS_IO		(LATBbits.LATB1)
+#else
+    #define EEPROM_CS_TRIS		(TRISEbits.TRISE5)
+    #define EEPROM_CS_IO		(LATEbits.LATE5)
+#endif
 
 
+#define EEPROM_SCK_TRIS                 (TRISGbits.TRISG6)
+#define EEPROM_SDI_TRIS                 (TRISGbits.TRISG7)
+#define EEPROM_SDO_TRIS                 (TRISGbits.TRISG8)
+#define EEPROM_SPI_IF                   (IFS1bits.SPI2RXIF)
+#define EEPROM_SSPBUF                   (SPI2BUF)
+#define EEPROM_SPICON1                  (SPI2CON)
+#define EEPROM_SPICON1bits              (SPI2CONbits)
+#define EEPROM_SPIBRG                   (SPI2BRG)
+#define EEPROM_SPISTAT                  (SPI2STAT)
+#define EEPROM_SPISTATbits              (SPI2STATbits)
+
+//http://www.microchip.com/forums/m624463-print.aspx
 //----------------------------
 // MRF24WG0MA/B WiFi I/O pins
 //----------------------------
